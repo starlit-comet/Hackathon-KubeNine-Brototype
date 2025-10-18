@@ -40,6 +40,33 @@ export const getPinnedMessages = async (roomId, authToken, userId) => {
 };
 
 /**
+ * Get all pinned messages for dashboard (with enhanced parameters)
+ * @param {string} roomId - The room ID
+ * @param {string} authToken - X-Auth-Token
+ * @param {string} userId - X-User-Id
+ * @returns {Promise<{success: boolean, messages?: Array, error?: string}>}
+ */
+export const getAllPinnedMessages = async (roomId, authToken, userId) => {
+  try {
+    const response = await api.get('/chat.getPinnedMessages', {
+      headers: getAuthHeaders(authToken, userId),
+      params: { 
+        roomId,
+        count: 50, // Get more messages for dashboard
+        sort: JSON.stringify({ pinnedAt: -1 }) // Sort by pinned date descending
+      },
+    });
+    if (response.data.success) {
+      return { success: true, messages: response.data.messages };
+    } else {
+      return { success: false, error: response.data.error || 'Failed to fetch pinned messages' };
+    }
+  } catch (error) {
+    return { success: false, error: error.response?.data?.error || error.message };
+  }
+};
+
+/**
  * Unpin a message
  * @param {string} messageId - ID of the message to unpin
  * @param {string} authToken - X-Auth-Token

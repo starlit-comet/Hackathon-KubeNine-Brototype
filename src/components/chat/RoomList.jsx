@@ -1,9 +1,20 @@
 import React from 'react';
+import { PinnedMessagesDashboard } from './index';
 import './RoomList.css';
 
-const RoomList = ({ rooms, currentRoom, onRoomSelect }) => {
+const RoomList = ({ rooms, currentRoom, onRoomSelect, authToken, userId, onMessageClick }) => {
   return (
     <div className="room-list">
+      {/* Pinned Messages Dashboard - First item */}
+      {authToken && userId && (
+        <PinnedMessagesDashboard 
+          authToken={authToken}
+          userId={userId}
+          rooms={rooms}
+          onMessageClick={onMessageClick}
+        />
+      )}
+      
       <div className="room-list-header">
         <h3>Channels</h3>
         <span className="room-count">{rooms.length}</span>

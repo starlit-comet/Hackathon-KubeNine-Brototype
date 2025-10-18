@@ -96,6 +96,21 @@ const ChatLayout = () => {
     setMessages(prevMessages => [...prevMessages, message]);
   };
 
+  const handleMessageClick = (messageId, roomId) => {
+    // Find the room and switch to it, then scroll to the message
+    const targetRoom = rooms.find(room => room._id === roomId);
+    if (targetRoom) {
+      setCurrentRoom(targetRoom);
+      // Scroll to message after a short delay to allow room to load
+      setTimeout(() => {
+        const element = document.getElementById(`message-${messageId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 500);
+    }
+  };
+
   const handleLogout = () => {
     logout();
   };
@@ -143,7 +158,10 @@ const ChatLayout = () => {
           <RoomList 
             rooms={rooms} 
             currentRoom={currentRoom} 
-            onRoomSelect={handleRoomSelect} 
+            onRoomSelect={handleRoomSelect}
+            authToken={authToken}
+            userId={userId}
+            onMessageClick={handleMessageClick}
           />
         </div>
         
