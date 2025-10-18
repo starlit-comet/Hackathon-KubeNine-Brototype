@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { sendMessage } from '../../services';
+import { useChat } from '../../contexts/ChatContext';
+import { sendMessage } from '../../services/api/rocketchat';
+import { notificationService } from '../../services';
 import './MessageInput.css';
 
 const MessageInput = ({ roomId, onNewMessage }) => {
@@ -8,6 +10,7 @@ const MessageInput = ({ roomId, onNewMessage }) => {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const { authToken, userId } = useAuth();
+  const { addMessage } = useChat();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,14 +24,24 @@ const MessageInput = ({ roomId, onNewMessage }) => {
       const result = await sendMessage(roomId, message.trim(), authToken, userId);
       
       if (result.success) {
-        // Add the message to the local state immediately for better UX
-        onNewMessage(result.message);
+        // Add the message to the context immediately for better UX
+        addMessage(roomId, result.message);
         setMessage('');
+        
+        // Play message sent sound
+        notificationService.playMessageSentSound();
+        
+        // Also call the callback for backward compatibility
+        if (onNewMessage) {
+          onNewMessage(result.message);
+        }
       } else {
         setError(result.error || 'Failed to send message');
+        notificationService.playErrorSound();
       }
     } catch (err) {
       setError('An unexpected error occurred');
+      notificationService.playErrorSound();
     } finally {
       setSending(false);
     }

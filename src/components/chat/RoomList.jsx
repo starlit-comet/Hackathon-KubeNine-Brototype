@@ -1,25 +1,27 @@
 import React from 'react';
-import { PinnedMessagesDashboard } from './index';
+import PushPinIcon from '@mui/icons-material/PushPin';
 import './RoomList.css';
 
-const RoomList = ({ rooms, currentRoom, onRoomSelect, authToken, userId, onMessageClick }) => {
+const RoomList = ({ rooms, currentRoom, onRoomSelect, authToken, userId, onMessageClick, onToggleAllPinned, showAllPinned }) => {
+
   return (
     <div className="room-list">
-      {/* Pinned Messages Dashboard - First item */}
-      {authToken && userId && (
-        <PinnedMessagesDashboard 
-          authToken={authToken}
-          userId={userId}
-          rooms={rooms}
-          onMessageClick={onMessageClick}
-        />
-      )}
-      
       <div className="room-list-header">
         <h3>Channels</h3>
-        <span className="room-count">{rooms.length}</span>
+        <div className="header-actions">
+          <span className="room-count">{rooms.length}</span>
+          {authToken && userId && (
+            <button 
+              className={`pin-button ${showAllPinned ? 'active' : ''}`}
+              onClick={onToggleAllPinned}
+              title={showAllPinned ? 'Hide All Pinned Messages' : 'Show All Pinned Messages'}
+            >
+              <PushPinIcon />
+            </button>
+          )}
+        </div>
       </div>
-      
+
       <div className="room-list-content">
         {rooms.length === 0 ? (
           <div className="no-rooms">

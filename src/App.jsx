@@ -1,5 +1,6 @@
 import React from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ChatProvider } from './contexts/ChatContext';
 import { Login } from './components/auth';
 import { ChatLayout } from './components/layout';
 import './App.css';
@@ -23,11 +24,12 @@ const AppContent = () => {
 function App() {
   return (
     <ErrorBoundary>
-
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
-     </ErrorBoundary>
+      <AuthProvider>
+        <ChatProvider>
+          <AppContent />
+        </ChatProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
