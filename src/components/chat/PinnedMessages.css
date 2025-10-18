@@ -1,0 +1,60 @@
+/* Container for all pinned messages */
+.pinned-messages-container {
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Individual pinned message card */
+.pinned-message {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  background-color: #f0f4f8;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.pinned-message:hover {
+  background-color: #e0e7ff;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Pin icon */
+.pin-icon {
+  margin-right: 10px;
+  color: #5b5bff;
+}
+
+/* Text content container */
+.pinned-message-content {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Who pinned it */
+.pinned-by {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+/* Pinned message text */
+.pinned-text {
+  color: #555;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+/* Pinned message date */
+.pinned-date {
+  color: #999;
+  font-size: 0.75rem;
+}

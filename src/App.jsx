@@ -1,8 +1,9 @@
 import React from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import Login from './components/Login';
-import ChatLayout from './components/ChatLayout';
+import { Login } from './components/auth';
+import { ChatLayout } from './components/layout';
 import './App.css';
+import { ErrorBoundary } from './components/common';
 
 const AppContent = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -21,9 +22,12 @@ const AppContent = () => {
 
 function App() {
   return (
+    <ErrorBoundary>
+
     <AuthProvider>
       <AppContent />
     </AuthProvider>
+     </ErrorBoundary>
   );
 }
 
