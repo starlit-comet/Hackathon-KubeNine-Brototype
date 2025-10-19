@@ -71,13 +71,13 @@ const UserStatus = ({ authToken, userId, onStatusChange }) => {
       if (result.success) {
         setCurrentStatus(newStatus);
         
-        // Store status in localStorage
-        notificationService.storeUserStatus(newStatus);
+        // Update notification service with new status
+        notificationService.updateUserStatus(newStatus);
         
-        // Play status change sound
+        // Play status change sound (respects user preferences)
         notificationService.playStatusChangeSound();
         
-        // Show browser notification if user is not actively viewing
+        // Show browser notification if user is not actively viewing (respects user preferences)
         if (!notificationService.isUserActivelyViewing()) {
           notificationService.showStatusChangeNotification(newStatus);
         }

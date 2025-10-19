@@ -429,7 +429,7 @@ export const ChatProvider = ({ children }) => {
   }, [state.pinnedMessagesByRoom]);
 
   useEffect(() => {
-    console.log('Saving allPinnedMessages to localStorage:', state.allPinnedMessages.length);
+    // console.log('Saving allPinnedMessages to localStorage:', state.allPinnedMessages.length);
     saveToStorage(STORAGE_KEYS.ALL_PINNED_MESSAGES, state.allPinnedMessages);
   }, [state.allPinnedMessages]);
 

@@ -13,10 +13,10 @@ const PinnedMessages = ({ roomId, authToken, userId, scrollToMessage, onMessageU
     if (!roomId) return;
 
     const fetchPinned = async () => {
-      console.log(roomId, authToken, userId, 'for pinned');
+      // console.log(roomId, authToken, userId, 'for pinned');
       const result = await getPinnedMessages(roomId, authToken, userId);
       if (result.success) {
-        console.log(result, 'pinned message result');
+        // console.log(result, 'pinned message result');
         setPinnedMessages(result.messages ?? []);
       } else {
         console.error('Failed to fetch pinned messages:', result.error);

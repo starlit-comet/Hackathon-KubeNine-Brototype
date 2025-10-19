@@ -19,31 +19,31 @@ const AllPinnedMessages = ({ authToken, userId, onMessageClick, onClose }) => {
   } = useChat();
 
   // Debug: Log when component loads data
-  React.useEffect(() => {
-    console.log('AllPinnedMessages component loaded with:', {
-      allPinnedMessagesCount: allPinnedMessages?.length || 0,
-      loading: loading.pinnedMessages,
-      authToken: !!authToken,
-      userId: !!userId,
-      roomsCount: rooms?.length || 0
-    });
+  // React.useEffect(() => {
+  //   console.log('AllPinnedMessages component loaded with:', {
+  //     allPinnedMessagesCount: allPinnedMessages?.length || 0,
+  //     loading: loading.pinnedMessages,
+  //     authToken: !!authToken,
+  //     userId: !!userId,
+  //     roomsCount: rooms?.length || 0
+  //   });
     
-    // Debug localStorage data
-    const localStorageData = localStorage.getItem('chatApp_allPinnedMessages');
-    if (localStorageData) {
-      try {
-        const parsed = JSON.parse(localStorageData);
-        console.log('localStorage allPinnedMessages:', {
-          count: parsed?.length || 0,
-          data: parsed
-        });
-      } catch (error) {
-        console.error('Error parsing localStorage allPinnedMessages:', error);
-      }
-    } else {
-      console.log('No localStorage data found for allPinnedMessages');
-    }
-  }, [allPinnedMessages, loading.pinnedMessages, authToken, userId, rooms]);
+  //   // Debug localStorage data
+  //   const localStorageData = localStorage.getItem('chatApp_allPinnedMessages');
+  //   if (localStorageData) {
+  //     try {
+  //       const parsed = JSON.parse(localStorageData);
+  //       console.log('localStorage allPinnedMessages:', {
+  //         count: parsed?.length || 0,
+  //         data: parsed
+  //       });
+  //     } catch (error) {
+  //       console.error('Error parsing localStorage allPinnedMessages:', error);
+  //     }
+  //   } else {
+  //     console.log('No localStorage data found for allPinnedMessages');
+  //   }
+  // }, [allPinnedMessages, loading.pinnedMessages, authToken, userId, rooms]);
 
   // Function to handle message unpinning
   const handleUnpinMessage = async (messageId, roomId) => {

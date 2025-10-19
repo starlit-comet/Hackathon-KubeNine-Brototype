@@ -7,8 +7,15 @@ class NotificationService {
   constructor() {
     this.audioContext = null;
     this.isUserActive = true;
+    this.userStatus = 'online'; // Default status
     this.setupUserActivityDetection();
     this.requestNotificationPermission();
+    
+    // Load user status from localStorage on initialization
+    const storedStatus = this.getStoredUserStatus();
+    if (storedStatus) {
+      this.userStatus = storedStatus;
+    }
   }
 
   /**
@@ -98,6 +105,9 @@ class NotificationService {
    * Play status change sound
    */
   playStatusChangeSound() {
+    const preferences = this.getNotificationPreferences();
+    if (!preferences.statusChangeSound) return;
+
     // Play a pleasant chime for status change
     this.playTone(523.25, 150, 'sine', 0.2); // C5
     setTimeout(() => this.playTone(659.25, 150, 'sine', 0.2), 100); // E5
@@ -108,6 +118,9 @@ class NotificationService {
    * Play message sent sound
    */
   playMessageSentSound() {
+    const preferences = this.getNotificationPreferences();
+    if (!preferences.sound) return;
+
     // Play a short, satisfying sound for message sent
     this.playTone(800, 100, 'sine', 0.15);
     setTimeout(() => this.playTone(1000, 100, 'sine', 0.15), 50);
@@ -117,6 +130,9 @@ class NotificationService {
    * Play new message received sound
    */
   playNewMessageSound() {
+    const preferences = this.getNotificationPreferences();
+    if (!preferences.messageSound) return;
+
     // Play a notification sound for new messages
     this.playTone(440, 200, 'sine', 0.3); // A4
     setTimeout(() => this.playTone(554.37, 200, 'sine', 0.3), 150); // C#5
@@ -145,13 +161,16 @@ class NotificationService {
    * Show browser notification
    */
   showNotification(title, options = {}) {
+    const preferences = this.getNotificationPreferences();
+    if (!preferences.webNotification) return null;
+
     if ('Notification' in window && Notification.permission === 'granted') {
       const notification = new Notification(title, {
         icon: '/favicon.ico',
         badge: '/favicon.ico',
         tag: options.tag || 'chat-notification',
         requireInteraction: false,
-        silent: false,
+        silent: !preferences.sound,
         ...options
       });
 
@@ -195,14 +214,88 @@ class NotificationService {
    * Show new message notification
    */
   showNewMessageNotification(message, sender, roomName) {
+    const preferences = this.getNotificationPreferences();
+    
+    // Only show notification if user is not actively viewing and web notifications are enabled
+    if (this.isUserActivelyViewing() || !preferences.webNotification) {
+      return;
+    }
+
     this.showNotification(
       `New message from ${sender}`,
       {
         body: message.length > 50 ? `${message.substring(0, 50)}...` : message,
         tag: `message-${Date.now()}`,
-        data: { roomName, sender }
+        data: { roomName, sender },
+        priority: preferences.priority
       }
     );
+  }
+
+  /**
+   * Show notification for different user status types
+   */
+  showStatusBasedNotification(type, data) {
+    const preferences = this.getNotificationPreferences();
+    
+    switch (type) {
+      case 'message':
+        if (preferences.messageSound) {
+          this.playNewMessageSound();
+        }
+        if (preferences.webNotification && !this.isUserActivelyViewing()) {
+          this.showNewMessageNotification(data.message, data.sender, data.roomName);
+        }
+        break;
+        
+      case 'connection':
+        if (preferences.sound) {
+          this.playConnectionSound(data.isConnected);
+        }
+        if (preferences.webNotification) {
+          this.showConnectionNotification(data.isConnected);
+        }
+        break;
+        
+      case 'error':
+        this.playErrorSound();
+        if (preferences.webNotification) {
+          this.showNotification('Error', {
+            body: data.message,
+            tag: 'error-notification'
+          });
+        }
+        break;
+        
+      case 'success':
+        if (preferences.sound) {
+          this.playSuccessSound();
+        }
+        break;
+        
+      default:
+        break;
+    }
+  }
+
+  /**
+   * Play connection sound based on connection status
+   */
+  playConnectionSound(isConnected) {
+    const preferences = this.getNotificationPreferences();
+    if (!preferences.sound) return;
+
+    if (isConnected) {
+      // Play ascending tone for connection
+      this.playTone(392, 150, 'sine', 0.2); // G4
+      setTimeout(() => this.playTone(523.25, 150, 'sine', 0.2), 100); // C5
+      setTimeout(() => this.playTone(659.25, 200, 'sine', 0.2), 200); // E5
+    } else {
+      // Play descending tone for disconnection
+      this.playTone(659.25, 150, 'sine', 0.2); // E5
+      setTimeout(() => this.playTone(523.25, 150, 'sine', 0.2), 100); // C5
+      setTimeout(() => this.playTone(392, 200, 'sine', 0.2), 200); // G4
+    }
   }
 
   /**
@@ -216,6 +309,59 @@ class NotificationService {
         tag: 'connection-status'
       }
     );
+  }
+
+  /**
+   * Update user status and store in localStorage
+   */
+  updateUserStatus(status) {
+    this.userStatus = status;
+    this.storeUserStatus(status);
+  }
+
+  /**
+   * Get current user status
+   */
+  getCurrentUserStatus() {
+    return this.userStatus;
+  }
+
+  /**
+   * Get notification preferences based on user status
+   */
+  getNotificationPreferences() {
+    const preferences = {
+      online: {
+        sound: true,
+        webNotification: true,
+        messageSound: true,
+        statusChangeSound: true,
+        priority: 'high'
+      },
+      away: {
+        sound: true,
+        webNotification: true,
+        messageSound: true,
+        statusChangeSound: true,
+        priority: 'normal'
+      },
+      busy: {
+        sound: false,
+        webNotification: false,
+        messageSound: false,
+        statusChangeSound: true,
+        priority: 'low'
+      },
+      offline: {
+        sound: false,
+        webNotification: false,
+        messageSound: false,
+        statusChangeSound: false,
+        priority: 'low'
+      }
+    };
+
+    return preferences[this.userStatus] || preferences.online;
   }
 
   /**
@@ -260,6 +406,90 @@ class NotificationService {
     } catch (error) {
       console.warn('Could not clear stored user status:', error);
     }
+  }
+
+  /**
+   * Check if notifications are enabled for current status
+   */
+  areNotificationsEnabled() {
+    const preferences = this.getNotificationPreferences();
+    return preferences.webNotification || preferences.sound;
+  }
+
+  /**
+   * Check if sound notifications are enabled for current status
+   */
+  areSoundNotificationsEnabled() {
+    const preferences = this.getNotificationPreferences();
+    return preferences.sound;
+  }
+
+  /**
+   * Check if web notifications are enabled for current status
+   */
+  areWebNotificationsEnabled() {
+    const preferences = this.getNotificationPreferences();
+    return preferences.webNotification;
+  }
+
+  /**
+   * Get notification priority for current status
+   */
+  getNotificationPriority() {
+    const preferences = this.getNotificationPreferences();
+    return preferences.priority;
+  }
+
+  /**
+   * Update notification preferences for current status
+   */
+  updateNotificationPreferences(updates) {
+    // This could be extended to allow users to customize notification preferences
+    // For now, preferences are fixed based on status
+    console.log('Notification preferences are currently fixed based on user status');
+  }
+
+  /**
+   * Handle automatic status updates based on user activity
+   */
+  handleUserActivity() {
+    // If user is busy or offline, don't auto-update status
+    if (this.userStatus === 'busy' || this.userStatus === 'offline') {
+      return;
+    }
+
+    // If user becomes active and was away, consider updating to online
+    if (this.userStatus === 'away' && this.isUserActive) {
+      // Could automatically set to online, but for now just log
+      console.log('User became active while away - consider auto-updating to online');
+    }
+  }
+
+  /**
+   * Handle user becoming inactive
+   */
+  handleUserInactivity() {
+    // If user is online and becomes inactive, could auto-set to away
+    if (this.userStatus === 'online' && !this.isUserActive) {
+      // Could automatically set to away, but for now just log
+      console.log('User became inactive while online - consider auto-updating to away');
+    }
+  }
+
+  /**
+   * Get status-based notification settings for external components
+   */
+  getStatusNotificationSettings() {
+    return {
+      status: this.userStatus,
+      preferences: this.getNotificationPreferences(),
+      isActive: this.isUserActive,
+      isViewing: this.isUserActivelyViewing(),
+      canReceiveNotifications: this.areNotificationsEnabled(),
+      canReceiveSounds: this.areSoundNotificationsEnabled(),
+      canReceiveWebNotifications: this.areWebNotificationsEnabled(),
+      priority: this.getNotificationPriority()
+    };
   }
 }
 

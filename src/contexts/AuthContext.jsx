@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { notificationService } from '../services';
 
 const AuthContext = createContext();
 
@@ -26,6 +27,12 @@ export const AuthProvider = ({ children }) => {
       setAuthToken(token);
       setUserId(userId);
       setUser(JSON.parse(userData));
+      
+      // Load user status from localStorage and update notification service
+      const storedStatus = notificationService.getStoredUserStatus();
+      if (storedStatus) {
+        notificationService.updateUserStatus(storedStatus);
+      }
     }
     setLoading(false);
   }, []);
@@ -40,6 +47,15 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('authToken', authToken);
     localStorage.setItem('userId', userId);
     localStorage.setItem('user', JSON.stringify(user));
+    
+    // Load and set user status from localStorage
+    const storedStatus = notificationService.getStoredUserStatus();
+    if (storedStatus) {
+      notificationService.updateUserStatus(storedStatus);
+    } else {
+      // Default to online status if no stored status
+      notificationService.updateUserStatus('online');
+    }
   };
 
   const logout = () => {
@@ -51,6 +67,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userId');
     localStorage.removeItem('user');
+    
+    // Clear user status and reset to default
+    notificationService.clearStoredUserStatus();
+    notificationService.updateUserStatus('offline');
   };
 
   const value = {
